@@ -1,0 +1,23 @@
+{
+	"manifest_version": 2,
+	"author": "Douglas Vinicius",
+	"name": "YouOrg",
+	"description": "TODO",
+	"version": "0.1",
+
+	"permissions":
+	[
+		"*://*.youtube.com/*",
+		"tabs"
+	],
+
+	"browser_action":
+	{
+		"default_title": "Open YouOrg tab"
+	},
+
+	"background":
+	{
+		"scripts": ["src/youorg.js"]
+	}
+}

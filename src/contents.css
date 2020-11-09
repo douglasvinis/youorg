@@ -1,0 +1,18 @@
+body {
+	margin:0;
+}
+
+.video_entry
+{
+	margin-left: 20%;
+	width:50%;
+	display:flex;
+	margin-bottom: 4px;
+	cursor: pointer;
+	background-color: #cccccc;
+}
+
+.video_entry:hover
+{
+	background-color: #aaaaaa;
+}
