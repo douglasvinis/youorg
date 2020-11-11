@@ -37,7 +37,7 @@ body {
 .video_entry #info_div
 {
 	color: #666666;
-	font-size: 15px;
+	font-size: 14px;
 	text-align: left;
 	margin-left: 10px;
 	margin-right: 10px;
@@ -80,9 +80,27 @@ body {
 	margin-left: 10px;
 }
 
-.video_entry img
+/* links */
+.video_entry a
 {
-	margin-left: 10px;
+	text-decoration: none;
+	color: #007878;
+}
+.video_entry a:visited
+{
+	color: #222222;
+}
+.video_entry a:hover
+{
+	color: #ffffff;
+}
+
+.video_entry #thumb
+{
+	height: 100%;
+}
+.video_entry #thumb img
+{
 	clip-path: inset(13% 0px 13% 0px);
 	height: 100%;
 }

@@ -58,28 +58,32 @@ function show_channel_group(channel_id_list)
 			const EPOCH_TO_DAYS = 1/(1000 * 60 * 60 * 24);
 			let days = Math.round(diff*EPOCH_TO_DAYS);
 
+			let video_entry = document.importNode(video_entry_temp, true);
+			video_entry.querySelector(".video_entry").addEventListener("click", () =>
+			{
+				window.open(video_url, "_blank");
+			});
+
+			video_entry.querySelector("#title a").innerText = title;
+			video_entry.querySelector("#title a").setAttribute("href", video_url);
+			video_entry.querySelector("#title a").setAttribute("target", "_blank");
+			video_entry.querySelector("#title").addEventListener("click", (e) => {e.stopPropagation();});
+
+			video_entry.querySelector("#date").innerText = days.toString() + " days ago";
+
+			video_entry.querySelector("#channel a").innerText = channel_name;
+			video_entry.querySelector("#channel a").setAttribute("href", channel_url);
+			video_entry.querySelector("#channel a").setAttribute("target", "_blank");
+			video_entry.querySelector("#channel").addEventListener("click", (e) => {e.stopPropagation();});
+
 			description =  description.split('\n')[0];
 			description =  description.substr(0, 150);
-
-			let video_entry = document.importNode(video_entry_temp, true);
-			video_entry.querySelector("#title").innerText = title;
-			video_entry.querySelector("#title").addEventListener("click", (e) =>
-			{
-				e.stopPropagation();
-				//window.open(video_url, "_blank");
-			});
-			video_entry.querySelector("#date").innerText = days.toString() + " days ago";
-			video_entry.querySelector("#channel").innerText = channel_name;
-			video_entry.querySelector("#channel").addEventListener("click", (e) =>
-			{
-				e.stopPropagation();
-				window.open(channel_url, "_blank");
-			});
-
 			video_entry.querySelector("#description").innerText = description;
-			video_entry.querySelector(".video_entry").addEventListener("click", () => {window.open(video_url, "_blank");});
-			let thumb = video_entry.querySelector("img");
-			thumb.setAttribute("src", thumb_url);
+
+			video_entry.querySelector("#thumb").addEventListener("click", (e) => {e.stopPropagation();});
+			video_entry.querySelector("#thumb a").setAttribute("href", video_url);
+			video_entry.querySelector("#thumb a").setAttribute("target", "_blank");
+			video_entry.querySelector("#thumb img").setAttribute("src", thumb_url);
 			video_list.push([video_entry, pub_date.getTime()]);
 		}
 	}
@@ -123,3 +127,5 @@ computer_group.querySelector("div").innerText = "Computers";
 computer_group.querySelector("div").addEventListener("click", computer_action);
 navbar.appendChild(science_group);
 navbar.appendChild(computer_group);
+
+show_channel_group(SCIENCE_CHANNELS);
