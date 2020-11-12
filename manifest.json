@@ -10,14 +10,19 @@
 		"*://*.youtube.com/*",
 		"tabs"
 	],
-
 	"browser_action":
 	{
 		"default_title": "Open YouOrg tab"
 	},
-
 	"background":
 	{
 		"scripts": ["src/youorg.js"]
-	}
+	},
+	"content_scripts":
+	[
+		{
+			"matches": ["*://*.youtube.com/*"],
+			"js": ["src/youtube_mod.js"]
+		}
+	]
 }

@@ -46,7 +46,6 @@ function show_channel_group(channel_id_list)
 			let published_date = item.getElementsByTagName("published")[0].innerHTML;
 
 			let author = item.getElementsByTagName("author")[0];
-			console.log(author);
 			let channel_url = author.getElementsByTagName("uri")[0].innerHTML;
 			let channel_name = author.getElementsByTagName("name")[0].innerHTML;
 

@@ -34,10 +34,14 @@ browser.tabs.onUpdated.addListener((tab_id, change_info, tab) =>
 	if (tab_id == content_tab_id)
 	{
 		let sub = tab.url.substr(-CONTENTS_PAGE.length);
-		console.log(sub);
 		if (tab.url != BLANK_PAGE && sub != CONTENTS_PAGE)
 		{
 			content_tab_id = null;
 		}
 	}
+});
+
+browser.runtime.onMessage.addListener((message) =>
+{
+	console.log("add channel: " + message.text);
 });
