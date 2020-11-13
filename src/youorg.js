@@ -40,8 +40,3 @@ browser.tabs.onUpdated.addListener((tab_id, change_info, tab) =>
 		}
 	}
 });
-
-browser.runtime.onMessage.addListener((message) =>
-{
-	console.log("add channel: " + message.text);
-});

@@ -7,6 +7,7 @@
 'use strict';
 
 const BASE_URL = "https://www.youtube.com/feeds/videos.xml?channel_id="
+/*
 const SCIENCE_CHANNELS = 
 [
 	"UCYNbYGl89UUowy8oXkipC-Q", // Dr. Becky
@@ -20,6 +21,7 @@ const COMPUTER_CHANNELS =
 	"UC8uT9cgJorJPWu7ITLGo9Ww", // 8bitguy
 	"UCS0N5baNlQWJCUrhCEo8WlA"  // Ben Eater
 ];
+*/
 
 let videos = document.getElementById("videos");
 let video_entry_temp = document.getElementById("video_entry_temp").content;
@@ -97,34 +99,17 @@ function show_channel_group(channel_id_list)
 	});
 }
 
-function computer_action()
-{
-	while (videos.firstChild)
-	{
-		videos.lastChild.remove();
-	}
-	show_channel_group(COMPUTER_CHANNELS);
-}
-function science_action()
-{
-	while (videos.firstChild)
-	{
-		videos.lastChild.remove();
-	}
-
-	show_channel_group(SCIENCE_CHANNELS);
-}
-
 let navbar = document.getElementById("navbar");
-
 let group_entry_temp = document.getElementById("group_entry_temp").content;
-let science_group = document.importNode(group_entry_temp, true);
-science_group.querySelector("div").innerText = "Science";
-science_group.querySelector("div").addEventListener("click", science_action);
-let computer_group = document.importNode(group_entry_temp, true);
-computer_group.querySelector("div").innerText = "Computers";
-computer_group.querySelector("div").addEventListener("click", computer_action);
-navbar.appendChild(science_group);
-navbar.appendChild(computer_group);
 
-show_channel_group(SCIENCE_CHANNELS);
+browser.storage.local.get({group_list: []}).then((data) =>
+{
+	for (let name of data.group_list)
+	{
+		let group_entry = document.importNode(group_entry_temp, true);
+		group_entry.querySelector("div").innerText = name;
+		//group_entry.querySelector("div").addEventListener("click", science_action);
+		navbar.appendChild(group_entry);
+	}
+	//show_channel_group(SCIENCE_CHANNELS);
+});

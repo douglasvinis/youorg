@@ -8,7 +8,8 @@
 	"permissions":
 	[
 		"*://*.youtube.com/*",
-		"tabs"
+		"tabs",
+		"storage"
 	],
 	"browser_action":
 	{
