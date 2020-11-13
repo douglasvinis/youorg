@@ -118,20 +118,30 @@ for (let channel of sub_channels)
 		let channel_id = channel_link_split[2];
 		if (channel_link_split[1] == "user")
 		{
-			return;
-			// change from username to a youtube channel_id
+			// disable the add_button so the user cant click while the transition to add group page is not
+			// completed
+			add_button.disabled = true;
+			// @speed is this slow?
+			// get the feed xml page only to transform username into channel_id
+			let request = new XMLHttpRequest();
+			request.open("GET", "https://www.youtube.com/feeds/videos.xml?user=" + channel_id, false);
+			request.send(null);
+			let dom = (new DOMParser()).parseFromString(request.responseText, "text/xml").getElementsByTagName("entry")[0];
+			channel_id = dom.getElementsByTagName("yt:channelId")[0].innerHTML;
+			add_button.disabled = false;
 		}
 		let groups = groups_popup_tmp.cloneNode(true);
 		let cancel = groups.querySelector("#cancel");
 
-		function delete_groups_popup(evt)
+		function delete_groups_popup()
 		{
 			let to_remove = body_node.querySelector("#youorg_groups_popup");
 			body_node.removeChild(to_remove);
 			console.log("DELETED!!!!");
 		}
-		cancel.addEventListener("click", delete_groups_popup);
-		function update_group_list()
+		cancel.addEventListener("click", evt => {delete_groups_popup();});
+
+		function list_groups()
 		{
 			let list = groups.querySelector("#list");
 			while (list.firstChild) {list.removeChild(list.lastChild);}
@@ -142,6 +152,30 @@ for (let channel of sub_channels)
 				for (let name of group_name_list)
 				{
 					let group_entry = (new DOMParser()).parseFromString(GROUP_ENTRY, "text/html").querySelector("div");
+
+					group_entry.addEventListener("click", evt =>
+					{
+						let store_data = {};
+						store_data[name] = [];
+						browser.storage.local.get(store_data).then(data =>
+						{
+							let channel_id_list = data[name];
+							if (channel_id_list.indexOf(channel_id) < 0)
+							{
+								channel_id_list.push(channel_id);
+								store_data[name] = channel_id_list;
+								browser.storage.local.set(store_data).then(() =>
+								{
+									delete_groups_popup();
+								});
+							}
+							else
+							{
+								console.log("> This channel was already added to "+name+" group.");
+								delete_groups_popup();
+							}
+						});
+					});
 					group_entry.innerText = name;
 					//group_entry.setAttribute("id", "chosen");
 					list.appendChild(group_entry);
@@ -162,7 +196,7 @@ for (let channel of sub_channels)
 						group_name_list.push(group_name);
 						browser.storage.local.set({group_list: group_name_list}).then(() =>
 						{
-							update_group_list();
+							list_groups();
 						});
 						console.log("ADD GROUP");
 					}
@@ -170,7 +204,7 @@ for (let channel of sub_channels)
 				}
 			});
 		}
-		update_group_list();
+		list_groups();
 		let add_group_input = groups.querySelector("#new_group input");
 		let add_group_button = groups.querySelector("#new_group button");
 		add_group_input.addEventListener("keyup", (evt) => {if (evt.keyCode === 13){add_new_group();}});

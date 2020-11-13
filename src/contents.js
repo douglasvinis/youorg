@@ -6,23 +6,6 @@
 
 'use strict';
 
-const BASE_URL = "https://www.youtube.com/feeds/videos.xml?channel_id="
-/*
-const SCIENCE_CHANNELS = 
-[
-	"UCYNbYGl89UUowy8oXkipC-Q", // Dr. Becky
-	"UCu6mSoMNzHQiBIOCkHUa2Aw", // Cody's Lab
-	"UCsXVk37bltHxD1rDPwtNM8Q"  // Kurzgesagt
-];
-
-const COMPUTER_CHANNELS = 
-[
-	"UC9-y-6csu5WGm29I7JiwpnA", // Computerphile
-	"UC8uT9cgJorJPWu7ITLGo9Ww", // 8bitguy
-	"UCS0N5baNlQWJCUrhCEo8WlA"  // Ben Eater
-];
-*/
-
 let videos = document.getElementById("videos");
 let video_entry_temp = document.getElementById("video_entry_temp").content;
 
@@ -33,7 +16,9 @@ function show_channel_group(channel_id_list)
 	for (let channel_i=0; channel_i < channel_id_list.length; channel_i++)
 	{
 		let request = new XMLHttpRequest();
-		request.open("GET", BASE_URL + channel_id_list[channel_i], false);
+		request.open("GET",
+				"https://www.youtube.com/feeds/videos.xml?channel_id=" + channel_id_list[channel_i],
+				false);
 		request.send(null);
 		let channel_videos = (new DOMParser()).parseFromString(request.responseText, "text/xml");
 		let info_list = channel_videos.getElementsByTagName("entry");
@@ -59,11 +44,8 @@ function show_channel_group(channel_id_list)
 			const EPOCH_TO_DAYS = 1/(1000 * 60 * 60 * 24);
 			let days = Math.round(diff*EPOCH_TO_DAYS);
 
-			let video_entry = document.importNode(video_entry_temp, true);
-			video_entry.querySelector(".video_entry").addEventListener("click", () =>
-			{
-				window.open(video_url, "_blank");
-			});
+			let video_entry = video_entry_temp.querySelector("div").cloneNode(true);
+			video_entry.addEventListener("click", () =>{window.open(video_url, "_blank");});
 
 			video_entry.querySelector("#title a").innerText = title;
 			video_entry.querySelector("#title a").setAttribute("href", video_url);
@@ -101,15 +83,52 @@ function show_channel_group(channel_id_list)
 
 let navbar = document.getElementById("navbar");
 let group_entry_temp = document.getElementById("group_entry_temp").content;
+let chosen_group_entry = null;
 
-browser.storage.local.get({group_list: []}).then((data) =>
+browser.storage.local.get({group_list: []}).then(data =>
 {
+	function open_group(name, group_node)
+	{
+		while (videos.firstChild) {videos.removeChild(videos.lastChild);}
+
+		if (chosen_group_entry != null) {chosen_group_entry.setAttribute("id", "");}
+		chosen_group_entry = group_node;
+		chosen_group_entry.setAttribute("id", "chosen");
+
+		let group_data_tmp = {};
+		group_data_tmp[name] = [];
+		browser.storage.local.get(group_data_tmp).then(group_data =>
+		{
+			for (let channel_id of group_data[name])
+			{
+				console.log(channel_id);
+			}
+			show_channel_group(group_data[name]);
+		});
+	}
+
+	let first_group_entry = null;
 	for (let name of data.group_list)
 	{
-		let group_entry = document.importNode(group_entry_temp, true);
-		group_entry.querySelector("div").innerText = name;
-		//group_entry.querySelector("div").addEventListener("click", science_action);
+		let group_entry = group_entry_temp.querySelector("div").cloneNode(true);
+		if (first_group_entry == null)
+		{
+			first_group_entry = [name, group_entry];
+		}
+		let group_data_tmp = {};
+		group_data_tmp[name] = [];
+		browser.storage.local.get(group_data_tmp).then(group_data =>
+		{
+			let channel_count = 0;
+			channel_count = group_data[name].length;
+			group_entry.innerText = "("+channel_count.toString()+") "+ name;
+		});
+		group_entry.addEventListener("click", evt => {open_group(name, group_entry);});
 		navbar.appendChild(group_entry);
 	}
-	//show_channel_group(SCIENCE_CHANNELS);
+	// opening the first group as default 
+	if (first_group_entry != null)
+	{
+		open_group(first_group_entry[0], first_group_entry[1]);
+	}
 });
