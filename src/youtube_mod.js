@@ -186,111 +186,172 @@ function scan_and_apply_buttons(root)
 		let sub_button = channel.querySelector("#subscribe-button");
 		let channel_link = channel.querySelector(".channel-link").getAttribute("href");
 		let add_button = document.createElement("button");
-		add_button.addEventListener("click", evt =>
+
+		let channel_link_split = channel_link.split("/");
+		let channel_id = channel_link_split[2];
+		if (channel_link_split[1] == "user")
 		{
-			let channel_link_split = channel_link.split("/");
-			let channel_id = channel_link_split[2];
-			if (channel_link_split[1] == "user")
+			// get the feed xml page only to transform username into channel_id
+			let request = new XMLHttpRequest();
+			request.open("GET", "https://www.youtube.com/feeds/videos.xml?user=" + channel_id, true);
+			request.onload = e =>
 			{
-				// disable the add_button so the user cant click while the transition to add group page is not
-				// completed
-				add_button.disabled = true;
-				// @speed is this slow?
-				// get the feed xml page only to transform username into channel_id
-				let request = new XMLHttpRequest();
-				request.open("GET", "https://www.youtube.com/feeds/videos.xml?user=" + channel_id, false);
-				request.send(null);
 				let dom = (new DOMParser()).parseFromString(request.responseText, "text/xml").getElementsByTagName("entry")[0];
 				channel_id = dom.getElementsByTagName("yt:channelId")[0].innerHTML;
-				add_button.disabled = false;
-			}
-			let groups = groups_popup_tmp.cloneNode(true);
-			let cancel = groups.querySelector("#cancel");
+				finish_add_button();
+			};
+			request.send(null);
+		}
+		else
+		{
+			finish_add_button();
+		}
 
-			function delete_groups_popup()
+		function finish_add_button()
+		{
+			add_button.addEventListener("click", evt =>
 			{
-				let to_remove = body_node.querySelector("#youorg_groups_popup");
-				body_node.removeChild(to_remove);
-				console.log("DELETED!!!!");
-			}
-			cancel.addEventListener("click", evt => {delete_groups_popup();});
+				let groups = groups_popup_tmp.cloneNode(true);
+				let cancel = groups.querySelector("#cancel");
 
-			function list_groups()
-			{
-				let list = groups.querySelector("#list");
-				while (list.firstChild) {list.removeChild(list.lastChild);}
-
-				browser.storage.local.get({group_list: []}).then(data =>
+				function delete_groups_popup()
 				{
-					let group_name_list = data.group_list;
-					for (let name of group_name_list)
-					{
-						let group_entry = (new DOMParser()).parseFromString(GROUP_ENTRY, "text/html").querySelector("div");
+					let to_remove = body_node.querySelector("#youorg_groups_popup");
+					body_node.removeChild(to_remove);
+					console.log("DELETED!!!!");
+				}
+				cancel.addEventListener("click", evt => {delete_groups_popup();});
 
-						group_entry.addEventListener("click", evt =>
+				function list_groups()
+				{
+					let list = groups.querySelector("#list");
+					while (list.firstChild) {list.removeChild(list.lastChild);}
+
+					browser.storage.local.get({group_list: []}).then(data =>
+					{
+						let group_name_list = data.group_list;
+						for (let name of group_name_list)
 						{
-							let store_data = {};
-							store_data[name] = [];
-							browser.storage.local.get(store_data).then(data =>
+							let group_entry = (new DOMParser()).parseFromString(GROUP_ENTRY, "text/html").querySelector("div");
+
+							group_entry.addEventListener("click", evt =>
 							{
-								let channel_id_list = data[name];
-								if (channel_id_list.indexOf(channel_id) < 0)
+								let store_data = {};
+								store_data[name] = [];
+								browser.storage.local.get(store_data).then(data =>
 								{
-									channel_id_list.push(channel_id);
-									store_data[name] = channel_id_list;
-									browser.storage.local.set(store_data).then(() =>
+									let channel_id_list = data[name];
+									if (channel_id_list.indexOf(channel_id) < 0)
 									{
+										channel_id_list.push(channel_id);
+										store_data[name] = channel_id_list;
+										browser.storage.local.set(store_data).then(() =>
+										{
+											delete_groups_popup();
+											grouped_button_mod();
+										});
+									}
+									else
+									{
+										console.log("> This channel was already added to "+name+" group.");
 										delete_groups_popup();
-									});
-								}
-								else
+									}
+								});
+							});
+							group_entry.innerText = name;
+							let tmp_group_data = {};
+							tmp_group_data[name] = [];
+							browser.storage.local.get(tmp_group_data).then(channel_data =>
+							{
+								if (channel_data[name].indexOf(channel_id) >= 0)
 								{
-									console.log("> This channel was already added to "+name+" group.");
-									delete_groups_popup();
+									group_entry.setAttribute("id", "chosen");
 								}
 							});
-						});
-						group_entry.innerText = name;
-						//group_entry.setAttribute("id", "chosen");
-						list.appendChild(group_entry);
-					}
+							list.appendChild(group_entry);
+						}
+					});
+				}
+				function add_new_group()
+				{
+					browser.storage.local.get({group_list: []}).then(data =>
+					{
+						let group_name_list = data.group_list;
+						let group_name = add_group_input.value;
+						if (group_name != "")
+						{
+							if (group_name_list.indexOf(group_name) == -1)
+							{
+								// @cleanup if storage.local.set fail i have a bug inside group_name_list
+								group_name_list.push(group_name);
+								browser.storage.local.set({group_list: group_name_list}).then(() =>
+								{
+									list_groups();
+								});
+								console.log("ADD GROUP");
+							}
+							add_group_input.value = "";
+						}
+					});
+				}
+				list_groups();
+				let add_group_input = groups.querySelector("#new_group input");
+				let add_group_button = groups.querySelector("#new_group button");
+				add_group_input.addEventListener("keyup", (evt) => {if (evt.keyCode === 13){add_new_group();}});
+				add_group_button.addEventListener("click", (evt) => {add_new_group();});
 
-				});
-			}
-			function add_new_group()
+				body_node.appendChild(groups);
+			});
+			
+			function grouped_button_mod()
 			{
 				browser.storage.local.get({group_list: []}).then(data =>
 				{
 					let group_name_list = data.group_list;
-					let group_name = add_group_input.value;
-					if (group_name != "")
+					// @speed I can get all members of group_name_list from storage at the same time
+					browser.storage.local.get(group_name_list).then(channel_data =>
 					{
-						if (group_name_list.indexOf(group_name) == -1)
+						let added_to_groups = [];
+						for (let name of group_name_list)
 						{
-							group_name_list.push(group_name);
-							browser.storage.local.set({group_list: group_name_list}).then(() =>
+							if (channel_data[name].indexOf(channel_id) >= 0)
 							{
-								list_groups();
-							});
-							console.log("ADD GROUP");
+								added_to_groups.push(name);
+							}
 						}
-						add_group_input.value = "";
-					}
+						
+						if (added_to_groups.length > 0)
+						{
+							add_button.innerText = "GROUPED";
+							let group_text = "Added to Groups:\n";
+							for (let gp of added_to_groups)
+							{
+								group_text += gp + "\n";
+							}
+							add_button.setAttribute("title", group_text);
+						}
+					});
 				});
 			}
-			list_groups();
-			let add_group_input = groups.querySelector("#new_group input");
-			let add_group_button = groups.querySelector("#new_group button");
-			add_group_input.addEventListener("keyup", (evt) => {if (evt.keyCode === 13){add_new_group();}});
-			add_group_button.addEventListener("click", (evt) => {add_new_group();});
 
-			body_node.appendChild(groups);
-		});
-		// add_button.setAttribute("id", "youorg_button");
-		add_button.innerText = "ADD TO GROUP";
-		add_button.style.color = "#000000";
-		sub_button.appendChild(add_button);
+			grouped_button_mod();
+			add_button.innerText = "ADD TO GROUP";
+			add_button.style.color = "#000000";
+			sub_button.appendChild(add_button);
+		}
 	}
 }
 
+if (window.location.pathname === "/feed/channels" && channels_page_list.length == 0)
+{
+	let channel_panel = document.getElementById("primary");
+	let contents = channel_panel.querySelector("#contents");
+	let obs = new MutationObserver((ml, o) => {check_more_channels_loaded(ml, o, contents);});
+	obs.observe(contents, {childList: true});
+	if (contents.childNodes.length > 0)
+	{
+		scan_and_apply_buttons(contents.firstChild);
+		channels_page_list.push(contents.firstChild);
+	}
+}
 console.log("__DONE__");
