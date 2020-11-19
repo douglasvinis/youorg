@@ -102,6 +102,143 @@ let style = (new DOMParser()).parseFromString(CUSTOM_STYLE, "text/html").querySe
 let groups_popup_tmp = (new DOMParser()).parseFromString(GROUPS_POPUP, "text/html").querySelector("div");
 body_node.appendChild(style);
 
+function create_and_append_button(parent_node, channel_id)
+{
+	let add_button = document.createElement("button");
+	add_button.addEventListener("click", evt =>
+	{
+		evt.preventDefault();
+		evt.stopPropagation();
+		let groups = groups_popup_tmp.cloneNode(true);
+		let cancel = groups.querySelector("#cancel");
+
+		function delete_groups_popup()
+		{
+			let to_remove = body_node.querySelector("#youorg_groups_popup");
+			body_node.removeChild(to_remove);
+			console.log("DELETED!!!!");
+		}
+		cancel.addEventListener("click", evt => {delete_groups_popup();});
+
+		function list_groups()
+		{
+			let list = groups.querySelector("#list");
+			while (list.firstChild) {list.removeChild(list.lastChild);}
+
+			browser.storage.local.get({group_list: []}).then(data =>
+			{
+				let group_name_list = data.group_list;
+				for (let name of group_name_list)
+				{
+					let group_entry = (new DOMParser()).parseFromString(GROUP_ENTRY, "text/html").querySelector("div");
+
+					group_entry.addEventListener("click", evt =>
+					{
+						let store_data = {};
+						store_data[name] = [];
+						browser.storage.local.get(store_data).then(data =>
+						{
+							let channel_id_list = data[name];
+							if (channel_id_list.indexOf(channel_id) < 0)
+							{
+								channel_id_list.push(channel_id);
+								store_data[name] = channel_id_list;
+								browser.storage.local.set(store_data).then(() =>
+								{
+									delete_groups_popup();
+									grouped_button_mod();
+								});
+							}
+							else
+							{
+								console.log("> This channel was already added to "+name+" group.");
+								delete_groups_popup();
+							}
+						});
+					});
+					group_entry.innerText = name;
+					let tmp_group_data = {};
+					tmp_group_data[name] = [];
+					browser.storage.local.get(tmp_group_data).then(channel_data =>
+					{
+						if (channel_data[name].indexOf(channel_id) >= 0)
+						{
+							group_entry.setAttribute("id", "chosen");
+						}
+					});
+					list.appendChild(group_entry);
+				}
+			});
+		}
+		function add_new_group()
+		{
+			browser.storage.local.get({group_list: []}).then(data =>
+			{
+				let group_name_list = data.group_list;
+				let group_name = add_group_input.value;
+				if (group_name != "")
+				{
+					if (group_name_list.indexOf(group_name) == -1)
+					{
+						// @cleanup if storage.local.set fail i have a bug inside group_name_list
+						group_name_list.push(group_name);
+						browser.storage.local.set({group_list: group_name_list}).then(() =>
+						{
+							list_groups();
+						});
+						console.log("ADD GROUP");
+					}
+					add_group_input.value = "";
+				}
+			});
+		}
+		list_groups();
+		let add_group_input = groups.querySelector("#new_group input");
+		let add_group_button = groups.querySelector("#new_group button");
+		add_group_input.addEventListener("keyup", (evt) => {if (evt.keyCode === 13){add_new_group();}});
+		add_group_button.addEventListener("click", (evt) => {add_new_group();});
+
+		body_node.appendChild(groups);
+	});
+	
+	function grouped_button_mod()
+	{
+		browser.storage.local.get({group_list: []}).then(data =>
+		{
+			let group_name_list = data.group_list;
+			// @speed I can get all members of group_name_list from storage at the same time
+			browser.storage.local.get(group_name_list).then(channel_data =>
+			{
+				let added_to_groups = [];
+				for (let name of group_name_list)
+				{
+					if (channel_data[name].indexOf(channel_id) >= 0)
+					{
+						added_to_groups.push(name);
+					}
+				}
+				if (added_to_groups.length > 0)
+				{
+					add_button.innerText = "O";
+					let group_text = "Added to Groups:\n";
+					for (let gp of added_to_groups)
+					{
+						group_text += gp + "\n";
+					}
+					add_button.setAttribute("title", group_text);
+				}
+			});
+		});
+	}
+
+	add_button.innerText = "+";
+	grouped_button_mod();
+	add_button.style.color = "#000000";
+	parent_node.appendChild(add_button);
+}
+
+
+// adding buttons to /feed/channels page
 let page_manager =  document.getElementById("page-manager");
 let observer_list = [];
 let channels_page_list = [];
@@ -115,7 +252,7 @@ function check_more_channels_loaded(mutation_list, observer, contents)
 			{
 				if (channels_page_list.indexOf(ch) == -1)
 				{
-					scan_and_apply_buttons(ch);
+					apply_buttons_sub_page(ch);
 					channels_page_list.push(ch);
 				}
 			}
@@ -123,7 +260,7 @@ function check_more_channels_loaded(mutation_list, observer, contents)
 	}
 }
 
-function handle_observer(mutation_list, observer)
+function handle_sub_page_observer(mutation_list, observer)
 {
 	for (let mutation of mutation_list)
 	{
@@ -136,7 +273,7 @@ function handle_observer(mutation_list, observer)
 			observer_list = [];
 			for (let child of page_manager.childNodes)
 			{
-				let obs = new MutationObserver(handle_observer);
+				let obs = new MutationObserver(handle_sub_page_observer);
 				obs.observe(child, {childList: false, attributes: true, subtree: false,
 						attributeFilter: ["role"]});
 				observer_list.push([child, obs]);
@@ -162,7 +299,7 @@ function handle_observer(mutation_list, observer)
 						obs.observe(contents, {childList: true});
 						if (contents.childNodes.length > 0)
 						{
-							scan_and_apply_buttons(contents.firstChild);
+							apply_buttons_sub_page(contents.firstChild);
 							channels_page_list.push(contents.firstChild);
 						}
 					}
@@ -175,17 +312,16 @@ function handle_observer(mutation_list, observer)
 		}
 	}
 }
-let observer = new MutationObserver(handle_observer);
-observer.observe(page_manager, {childList: true});
+let sub_page_observer = new MutationObserver(handle_sub_page_observer);
+sub_page_observer.observe(page_manager, {childList: true});
 
-function scan_and_apply_buttons(root)
+function apply_buttons_sub_page(root)
 {
 	let sub_channels = root.getElementsByTagName("ytd-channel-renderer");
 	for (let channel of sub_channels)
 	{
 		let sub_button = channel.querySelector("#subscribe-button");
 		let channel_link = channel.querySelector(".channel-link").getAttribute("href");
-		let add_button = document.createElement("button");
 
 		let channel_link_split = channel_link.split("/");
 		let channel_id = channel_link_split[2];
@@ -198,146 +334,13 @@ function scan_and_apply_buttons(root)
 			{
 				let dom = (new DOMParser()).parseFromString(request.responseText, "text/xml").getElementsByTagName("entry")[0];
 				channel_id = dom.getElementsByTagName("yt:channelId")[0].innerHTML;
-				finish_add_button();
+				create_and_append_button(sub_button, channel_id);
 			};
 			request.send(null);
 		}
 		else
 		{
-			finish_add_button();
-		}
-
-		function finish_add_button()
-		{
-			add_button.addEventListener("click", evt =>
-			{
-				let groups = groups_popup_tmp.cloneNode(true);
-				let cancel = groups.querySelector("#cancel");
-
-				function delete_groups_popup()
-				{
-					let to_remove = body_node.querySelector("#youorg_groups_popup");
-					body_node.removeChild(to_remove);
-					console.log("DELETED!!!!");
-				}
-				cancel.addEventListener("click", evt => {delete_groups_popup();});
-
-				function list_groups()
-				{
-					let list = groups.querySelector("#list");
-					while (list.firstChild) {list.removeChild(list.lastChild);}
-
-					browser.storage.local.get({group_list: []}).then(data =>
-					{
-						let group_name_list = data.group_list;
-						for (let name of group_name_list)
-						{
-							let group_entry = (new DOMParser()).parseFromString(GROUP_ENTRY, "text/html").querySelector("div");
-
-							group_entry.addEventListener("click", evt =>
-							{
-								let store_data = {};
-								store_data[name] = [];
-								browser.storage.local.get(store_data).then(data =>
-								{
-									let channel_id_list = data[name];
-									if (channel_id_list.indexOf(channel_id) < 0)
-									{
-										channel_id_list.push(channel_id);
-										store_data[name] = channel_id_list;
-										browser.storage.local.set(store_data).then(() =>
-										{
-											delete_groups_popup();
-											grouped_button_mod();
-										});
-									}
-									else
-									{
-										console.log("> This channel was already added to "+name+" group.");
-										delete_groups_popup();
-									}
-								});
-							});
-							group_entry.innerText = name;
-							let tmp_group_data = {};
-							tmp_group_data[name] = [];
-							browser.storage.local.get(tmp_group_data).then(channel_data =>
-							{
-								if (channel_data[name].indexOf(channel_id) >= 0)
-								{
-									group_entry.setAttribute("id", "chosen");
-								}
-							});
-							list.appendChild(group_entry);
-						}
-					});
-				}
-				function add_new_group()
-				{
-					browser.storage.local.get({group_list: []}).then(data =>
-					{
-						let group_name_list = data.group_list;
-						let group_name = add_group_input.value;
-						if (group_name != "")
-						{
-							if (group_name_list.indexOf(group_name) == -1)
-							{
-								// @cleanup if storage.local.set fail i have a bug inside group_name_list
-								group_name_list.push(group_name);
-								browser.storage.local.set({group_list: group_name_list}).then(() =>
-								{
-									list_groups();
-								});
-								console.log("ADD GROUP");
-							}
-							add_group_input.value = "";
-						}
-					});
-				}
-				list_groups();
-				let add_group_input = groups.querySelector("#new_group input");
-				let add_group_button = groups.querySelector("#new_group button");
-				add_group_input.addEventListener("keyup", (evt) => {if (evt.keyCode === 13){add_new_group();}});
-				add_group_button.addEventListener("click", (evt) => {add_new_group();});
-
-				body_node.appendChild(groups);
-			});
-			
-			function grouped_button_mod()
-			{
-				browser.storage.local.get({group_list: []}).then(data =>
-				{
-					let group_name_list = data.group_list;
-					// @speed I can get all members of group_name_list from storage at the same time
-					browser.storage.local.get(group_name_list).then(channel_data =>
-					{
-						let added_to_groups = [];
-						for (let name of group_name_list)
-						{
-							if (channel_data[name].indexOf(channel_id) >= 0)
-							{
-								added_to_groups.push(name);
-							}
-						}
-						
-						if (added_to_groups.length > 0)
-						{
-							add_button.innerText = "GROUPED";
-							let group_text = "Added to Groups:\n";
-							for (let gp of added_to_groups)
-							{
-								group_text += gp + "\n";
-							}
-							add_button.setAttribute("title", group_text);
-						}
-					});
-				});
-			}
-
-			grouped_button_mod();
-			add_button.innerText = "ADD TO GROUP";
-			add_button.style.color = "#000000";
-			sub_button.appendChild(add_button);
+			create_and_append_button(sub_button, channel_id);
 		}
 	}
 }
@@ -350,8 +353,64 @@ if (window.location.pathname === "/feed/channels" && channels_page_list.length =
 	obs.observe(contents, {childList: true});
 	if (contents.childNodes.length > 0)
 	{
-		scan_and_apply_buttons(contents.firstChild);
+		apply_buttons_sub_page(contents.firstChild);
 		channels_page_list.push(contents.firstChild);
 	}
 }
+
+// adding buttons to the side bar
+function initialize_side_bar()
+{
+	function apply_buttons_sub_side_bar(root)
+	{
+		let bar_channels = root.querySelectorAll(":scope > ytd-guide-entry-renderer");
+
+		for (let channel of bar_channels)
+		{
+			let base_node = channel.querySelector("#endpoint").querySelector("paper-item");
+			let channel_id = channel.querySelector("#endpoint").getAttribute("href").split("/")[2];
+			create_and_append_button(base_node, channel_id);
+		}
+	}
+
+	let root = sections.childNodes[1].querySelector("#items");
+	let expanded_channels = root.lastChild.querySelector("#expandable-items");
+	let side_sub_observer = new MutationObserver((mutation_list, observer) =>
+	{
+		for (let mutation of mutation_list)
+		{
+			if (mutation.type === "childList")
+			{
+				apply_buttons_sub_side_bar(expanded_channels);
+			}
+		}
+		side_sub_observer.disconnect();
+	});
+	side_sub_observer.observe(expanded_channels, {childList: true});
+	apply_buttons_sub_side_bar(root);
+}
+
+let sections = document.getElementById("sections");
+if (sections.childNodes.length >= 2)
+{
+	initialize_side_bar();
+}
+else
+{
+	let loaded_observer = new MutationObserver((mutation_list, observer) =>
+	{
+		for (let mutation of mutation_list)
+		{
+			if (mutation.type === "childList")
+			{
+				console.log("SIDE PANEL LATE INIT");
+				initialize_side_bar();
+				break;
+			}
+		}
+		loaded_observer.disconnect();
+	});
+	loaded_observer.observe(sections, {childList: true});
+}
+
 console.log("__DONE__");
