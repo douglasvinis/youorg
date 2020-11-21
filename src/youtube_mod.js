@@ -22,7 +22,8 @@ const GROUPS_POPUP = `
 
 const GROUP_ENTRY = `
 <div class="group_entry">
-GROUP NAME HERE
+<div>GROUP NAME HERE</div>
+<button style="display:none;">X</button>
 </div>
 `;
 
@@ -62,8 +63,20 @@ const CUSTOM_STYLE = `
 	height: 200px;
 }
 
+#youorg_groups_popup .group_entry button
+{
+	position: absolute;
+	background-color: #eeaaaa;
+	height: 100%;
+	width: 40px;
+	top: 0px;
+	right: 0px;
+}
+
 #youorg_groups_popup .group_entry
 {
+	position: relative;
+	height: 25px;
 	text-align: center;
 	font-size: 14px;
 	cursor: pointer;
@@ -75,6 +88,7 @@ const CUSTOM_STYLE = `
 }
 #youorg_groups_popup #chosen
 {
+	background-color: #88cccc;
 	border-style: solid;
 	border-width: 3px;
 	border-color: #440000;
@@ -146,7 +160,7 @@ function create_and_append_button(parent_node, channel_id)
 								browser.storage.local.set(store_data).then(() =>
 								{
 									delete_groups_popup();
-									grouped_button_mod();
+									add_button_info_update();
 								});
 							}
 							else
@@ -156,13 +170,33 @@ function create_and_append_button(parent_node, channel_id)
 							}
 						});
 					});
-					group_entry.innerText = name;
+					group_entry.querySelector("div").innerText = name;
 					let tmp_group_data = {};
 					tmp_group_data[name] = [];
 					browser.storage.local.get(tmp_group_data).then(channel_data =>
 					{
 						if (channel_data[name].indexOf(channel_id) >= 0)
 						{
+							group_entry.querySelector("button").style.display = "block";
+							group_entry.querySelector("button").addEventListener("click", evt =>
+							{
+								evt.stopPropagation();
+								console.log("DELETE_CHANNEL_FROM_GROUP");
+								let remove_set_group_data = {};
+								remove_set_group_data[name] = [];
+								for (let remove_channel of channel_data[name])
+								{
+									if (channel_id != remove_channel)
+									{
+										remove_set_group_data[name].push(remove_channel);
+									}
+								}
+								browser.storage.local.set(remove_set_group_data).then(() =>
+								{
+									list_groups();
+									add_button_info_update();
+								});
+							});
 							group_entry.setAttribute("id", "chosen");
 						}
 					});
@@ -201,7 +235,7 @@ function create_and_append_button(parent_node, channel_id)
 		body_node.appendChild(groups);
 	});
 	
-	function grouped_button_mod()
+	function add_button_info_update()
 	{
 		browser.storage.local.get({group_list: []}).then(data =>
 		{
@@ -209,6 +243,7 @@ function create_and_append_button(parent_node, channel_id)
 			// @speed I can get all members of group_name_list from storage at the same time
 			browser.storage.local.get(group_name_list).then(channel_data =>
 			{
+				console.log("UPDATING_ADD_TO_GROUP_BUTTON");
 				let added_to_groups = [];
 				for (let name of group_name_list)
 				{
@@ -227,16 +262,18 @@ function create_and_append_button(parent_node, channel_id)
 					}
 					add_button.setAttribute("title", group_text);
 				}
+				else
+				{
+					add_button.innerText = "+";
+				}
 			});
 		});
 	}
 
-	add_button.innerText = "+";
-	grouped_button_mod();
+	add_button_info_update();
 	add_button.style.color = "#000000";
 	parent_node.appendChild(add_button);
 }
-
 
 // adding buttons to /feed/channels page
 let page_manager =  document.getElementById("page-manager");
