@@ -5,6 +5,14 @@
 	"description": "TODO",
 	"version": "0.1",
 
+	"browser_specific_settings":
+	{
+		"gecko":
+		{
+			"id": "youorg@douglas.vinis"
+		}
+	},
+
 	"permissions":
 	[
 		"*://*.youtube.com/*",

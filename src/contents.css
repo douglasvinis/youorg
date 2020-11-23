@@ -109,6 +109,7 @@ body {
 
 .group_entry
 {
+	position: relative;
 	font-size: 18px;
 	background-color: white;
 	padding-left:30px;
@@ -116,6 +117,13 @@ body {
 	cursor: pointer;
 	height: 30px;
 	margin-bottom: 3px;
+}
+.group_entry button
+{
+	position: absolute;
+	right: 0;
+	top: 0;
+	height: 100%;
 }
 #chosen
 {
@@ -126,4 +134,18 @@ body {
 {
 	background-color: #000000;
 	color: white;
+}
+
+/* _______Group config_______*/
+
+#group_config
+{
+	padding-top: 40px;
+	background-color: #cccccc;
+}
+#group_config #channel_box
+{
+	overflow: auto;
+	background-color: #aaaaaa;
+	height: 400px;
 }

@@ -83,6 +83,7 @@ function show_channel_group(channel_id_list)
 
 let navbar = document.getElementById("navbar");
 let group_entry_temp = document.getElementById("group_entry_temp").content;
+let group_config_temp = document.getElementById("group_config_temp").content;
 let chosen_group_entry = null;
 
 browser.storage.local.get({group_list: []}).then(data =>
@@ -99,12 +100,65 @@ browser.storage.local.get({group_list: []}).then(data =>
 		group_data_tmp[name] = [];
 		browser.storage.local.get(group_data_tmp).then(group_data =>
 		{
-			for (let channel_id of group_data[name])
-			{
-				console.log(channel_id);
-			}
 			show_channel_group(group_data[name]);
 		});
+	}
+
+	function open_group_config(name, group_node)
+	{
+		while (videos.firstChild) {videos.removeChild(videos.lastChild);}
+
+		if (chosen_group_entry != null) {chosen_group_entry.setAttribute("id", "");}
+		chosen_group_entry = group_node;
+		chosen_group_entry.setAttribute("id", "chosen");
+
+		let group_config = group_config_temp.querySelector("div").cloneNode(true);
+		group_config.querySelector("#delete").innerText = "Delete Group";
+
+		let title_input = group_config.querySelector("#title");
+		let apply_button = group_config.querySelector("#apply");
+		title_input.value = name;
+		apply_button.innerText = "Apply Changes";
+		apply_button.addEventListener("click", evt =>
+		{
+			let new_group_name = title_input.value;
+			if ((new_group_name != name) && (new_group_name != ""))
+			{
+				let group_data_tmp = {};
+				group_data_tmp[name] = [];
+				browser.storage.local.get(group_data_tmp).then(group_data =>
+				{
+					group_data_tmp = {};
+					group_data_tmp[new_group_name] = group_data[name];
+					browser.storage.local.set(group_data_tmp).then(() =>
+					{
+						browser.storage.local.remove(name);
+					});
+				});
+				browser.storage.local.get({group_list: []}).then(group_list_data =>
+				{
+					let groups_list = group_list_data["group_list"];
+					let new_groups_list = [];
+					for (let group_name of groups_list)
+					{
+						if (group_name != name)
+						{
+							new_groups_list.push(group_name);
+						}
+						else
+						{
+							new_groups_list.push(new_group_name);
+						}
+					}
+					browser.storage.local.set({group_list: new_groups_list}).then(() =>
+					{
+						console.log("CHANGED GROUP NAME");
+					});
+				});
+			}
+			browser.tabs.reload();
+		});
+		videos.appendChild(group_config);
 	}
 
 	let first_group_entry = null;
@@ -121,9 +175,14 @@ browser.storage.local.get({group_list: []}).then(data =>
 		{
 			let channel_count = 0;
 			channel_count = group_data[name].length;
-			group_entry.innerText = "("+channel_count.toString()+") "+ name;
+			group_entry.querySelector("div").innerText = "("+channel_count.toString()+") "+ name;
 		});
 		group_entry.addEventListener("click", evt => {open_group(name, group_entry);});
+		group_entry.querySelector("button").addEventListener("click", evt =>
+		{
+			evt.stopPropagation();
+			open_group_config(name, group_entry);
+		});
 		navbar.appendChild(group_entry);
 	}
 	// opening the first group as default 
