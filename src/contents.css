@@ -147,5 +147,43 @@ body {
 {
 	overflow: auto;
 	background-color: #aaaaaa;
-	height: 400px;
+	height: 550px;
+}
+
+#group_config #actions
+{
+	padding-bottom: 50px;
+}
+#group_config #delete
+{
+	background-color: #cc9999;
+}
+
+#group_config #cancel
+{
+	margin-left: 200px;
+}
+
+.config_entry
+{
+	position: relative;
+	display: flex;
+	height: 40px;
+	margin-top: 5px;
+	background-color: #ffffff;
+}
+
+.config_entry div
+{
+	margin-top: 15px;
+	margin-left: 10px;
+}
+
+.config_entry button
+{
+	background-color: #cc9999;
+	position: absolute;
+	height: 100%;
+	right: 0;
+	top: 0;
 }
