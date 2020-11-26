@@ -153,7 +153,8 @@ browser.storage.local.get({group_list: []}).then(data =>
 			return title;
 		}
 
-		let title_input = group_config.querySelector("#title");
+		let title_input = group_config.querySelector("#title_change input");
+		group_config.querySelector("#title_change label").innerText = "Group Title";
 		let apply_button = group_config.querySelector("#apply");
 		let cancel_button = group_config.querySelector("#cancel");
 		let channel_box = group_config.querySelector("#channel_box");
@@ -269,3 +270,10 @@ browser.storage.local.get({group_list: []}).then(data =>
 		open_group(first_group_entry[0], first_group_entry[1]);
 	}
 });
+
+// author notice
+// @todo put a link in the author notice
+let author_msg = document.createElement("div");
+author_msg.innerText = "2020, YouOrg by Douglas Vinicius.";
+author_msg.setAttribute("id", "author_msg");
+document.getElementsByTagName("body")[0].appendChild(author_msg);

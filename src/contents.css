@@ -2,6 +2,16 @@ body {
 	margin:0;
 }
 
+:root
+{
+	--main-bg-color: #ccc;
+	--dark-bg-color: #aaa;
+	--button-color: #cccccc;
+	--button-color-hi: #fff;
+	--red-button-color: #eecccc;
+	--red-button-color-hi: #ee8888;
+}
+
 #videos
 {
 	margin-left: 25%;
@@ -13,7 +23,8 @@ body {
 	overflow: auto;
 	width: 24%;
 	height: 100%;
-	background-color: #cccccc;
+	background-color: var(--main-bg-color);
+	border-right: solid var(--dark-bg-color);
 }
 
 /* _______Video entry________*/
@@ -26,12 +37,12 @@ body {
 	cursor: pointer;
 	border-bottom-style: solid;
 	border-bottom-width: 2px;
-	border-bottom-color: #999999;
+	border-bottom-color: var(--dark-bg-color);
 }
 
 .video_entry:hover
 {
-	background-color: #cccccc;
+	background-color: var(--main-bg-color);
 }
 
 .video_entry #info_div
@@ -123,11 +134,12 @@ body {
 	position: absolute;
 	right: 0;
 	top: 0;
+	width: 40px;
 	height: 100%;
 }
 #chosen
 {
-	background-color: #aaaaaa;
+	background-color: var(--dark-bg-color);
 }
 
 .group_entry:hover
@@ -138,30 +150,60 @@ body {
 
 /* _______Group config_______*/
 
+button
+{
+	border: solid var(--dark-bg-color);
+	background-color: var(--button-color);
+}
+button:hover
+{
+	background-color: var(--button-color-hi);
+}
+
 #group_config
 {
-	padding-top: 40px;
-	background-color: #cccccc;
+	border: solid var(--dark-bg-color);
+	padding: 10px;
+	padding-top: 15px;
+	padding-bottom: 45px;
+	background-color: var(--main-bg-color);
 }
 #group_config #channel_box
 {
+	padding: 0 5px 0 5px;
 	overflow: auto;
-	background-color: #aaaaaa;
-	height: 550px;
+	background-color: var(--dark-bg-color);
+	height: 570px;
 }
 
 #group_config #actions
 {
-	padding-bottom: 50px;
+	padding-top: 5px;
 }
+#group_config #actions button
+{
+	padding: 7px;
+}
+
 #group_config #delete
 {
-	background-color: #cc9999;
+	background-color: var(--red-button-color);
 }
+#group_config #delete:hover
+{
+	background-color: var(--red-button-color-hi);
+}
+
 
 #group_config #cancel
 {
 	margin-left: 200px;
+}
+
+#title_change
+{
+	padding: 5px;
+	padding-bottom: 30px;
 }
 
 .config_entry
@@ -181,9 +223,23 @@ body {
 
 .config_entry button
 {
-	background-color: #cc9999;
+	background-color: var(--red-button-color);
 	position: absolute;
 	height: 100%;
+	width:40px;
 	right: 0;
 	top: 0;
+}
+.config_entry button:hover
+{
+	background-color: var(--red-button-color-hi);
+}
+
+#author_msg
+{
+	color: #aaa;
+	font-size: 16px;
+	position: fixed;
+	right: 40px;
+	bottom: 20px;
 }

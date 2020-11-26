@@ -9,13 +9,15 @@
 const GROUPS_POPUP = `
 <div id="youorg_groups_popup">
 	<div id="groups">
-		<div id="title">Add Channel To:</div>
+		<div id="title">
+			<div>Add Channel To:</div>
+			<button id="cancel">X</button>
+		</div>
 		<div id="list"></div>
 		<div id="new_group">
 			<input type="text" name="Group name">
 			<button>Create Group</button>
 		</div>
-		<button id="cancel">CANCEL</button>
 	</div>
 </div>
 `;
@@ -27,8 +29,19 @@ const GROUP_ENTRY = `
 </div>
 `;
 
+// @todo should i create a common css file to unify the colors?
 const CUSTOM_STYLE = `
 <style>
+:root
+{
+	--main-bg-color: #ccc;
+	--dark-bg-color: #aaa;
+	--button-color: #cccccc;
+	--button-color-hi: #fff;
+	--red-button-color: #eecccc;
+	--red-button-color-hi: #ee8888;
+}
+
 #youorg_groups_popup
 {
 	display: flex;
@@ -41,23 +54,43 @@ const CUSTOM_STYLE = `
 }
 #youorg_groups_popup #groups
 {
-	background-color: #ffffff;
-	width: 20%;
-	height: 40%;
+	background-color: var(--main-bg-color);
+	padding: 5px;
+	width: 22%;
+	height: 45%;
 	margin-left: 40%;
 	margin-top: 10%;
 }
 
 #youorg_groups_popup #title
 {
-	text-align: center;
-	background-color: #cccccc;
-	font-size: 20px;
-	padding-bottom: 30px;
+	padding: 12px 0 12px 0;
+	margin: 0 0 5px 0px;
+	position: relative;
 }
+#youorg_groups_popup #title div
+{
+	text-align: center;
+	font-size: 20px;
+}
+
+#youorg_groups_popup #cancel
+{
+	position: absolute;
+	width: 50px;
+	height: 100%;
+	right: 0;
+	top: 0;
+	background-color: var(--red-button-color);
+}
+#youorg_groups_popup #cancel:hover
+{
+	background-color: var(--red-button-color-hi);
+}
+
 #youorg_groups_popup #list
 {
-	background-color: #555555;
+	background-color: var(--dark-bg-color);
 	overflow: auto;
 	width: 100%;
 	height: 200px;
@@ -66,11 +99,15 @@ const CUSTOM_STYLE = `
 #youorg_groups_popup .group_entry button
 {
 	position: absolute;
-	background-color: #eeaaaa;
+	background-color: var(--red-button-color);
 	height: 100%;
 	width: 40px;
 	top: 0px;
 	right: 0px;
+}
+#youorg_groups_popup .group_entry button:hover
+{
+	background-color: var(--red-button-color-hi);
 }
 
 #youorg_groups_popup .group_entry
@@ -82,30 +119,23 @@ const CUSTOM_STYLE = `
 	cursor: pointer;
 	padding-top: 3px;
 	padding-bottom: 3px;
-	background-color: #999999;
-	margin-bottom: 2px;
+	background-color: #fff;
+	margin: 2px 5px 0px 5px;
 	color: #000000;
 }
 #youorg_groups_popup #chosen
 {
-	background-color: #88cccc;
-	border-style: solid;
-	border-width: 3px;
-	border-color: #440000;
+	background-color: #999999;
 }
 #youorg_groups_popup .group_entry:hover
 {
-	background-color: #eeeeee;
+	background-color: #000;
+	color: #fff;
 }
 
-#youorg_groups_popup #cancel
-{
-	width: 100%;
-	height: 40px;
-	background-color: #ffffff;
-}
 #youorg_groups_popup #new_group
 {
+	margin-top: 10px;
 	display: flex;
 }
 </style>
@@ -240,8 +270,13 @@ function create_and_append_button(parent_node, channel_id)
 		browser.storage.local.get({group_list: []}).then(data =>
 		{
 			let group_name_list = data.group_list;
+			let groups_init_obj = {};
+			for (let name of group_name_list)
+			{
+				groups_init_obj[name] = [];
+			}
 			// @speed I can get all members of group_name_list from storage at the same time
-			browser.storage.local.get(group_name_list).then(channel_data =>
+			browser.storage.local.get(groups_init_obj).then(channel_data =>
 			{
 				console.log("UPDATING_ADD_TO_GROUP_BUTTON");
 				let added_to_groups = [];
