@@ -19,6 +19,13 @@
 		"tabs",
 		"storage"
 	],
+	"web_accessible_resources":
+	[
+		"data/gear.svg",
+		"data/group_add.svg",
+		"data/close.svg"
+	],
+
 	"browser_action":
 	{
 		"default_title": "Open YouOrg tab"

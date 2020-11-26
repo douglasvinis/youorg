@@ -11,7 +11,7 @@ const GROUPS_POPUP = `
 	<div id="groups">
 		<div id="title">
 			<div>Add Channel To:</div>
-			<button id="cancel">X</button>
+			<button id="cancel"><img></img></button>
 		</div>
 		<div id="list"></div>
 		<div id="new_group">
@@ -25,7 +25,7 @@ const GROUPS_POPUP = `
 const GROUP_ENTRY = `
 <div class="group_entry">
 <div>GROUP NAME HERE</div>
-<button style="display:none;">X</button>
+<button style="display:none;"><img></img></button>
 </div>
 `;
 
@@ -40,6 +40,25 @@ const CUSTOM_STYLE = `
 	--button-color-hi: #fff;
 	--red-button-color: #eecccc;
 	--red-button-color-hi: #ee8888;
+}
+
+#add_button img
+{
+	width: 100%;
+	height: 100%;
+}
+#add_button
+{
+	background-color: var(--button-color);
+	margin-left: 4px;
+	padding: 5px;
+	border: solid var(--dark-bg-color);
+	width: 30px;
+	height: 30px;
+}
+#add_button:hover
+{
+	background-color: var(--button-color-hi);
 }
 
 #youorg_groups_popup
@@ -74,8 +93,14 @@ const CUSTOM_STYLE = `
 	font-size: 20px;
 }
 
+#youorg_groups_popup #cancel img
+{
+	width: 100%;
+	height: 100%;
+}
 #youorg_groups_popup #cancel
 {
+	padding: 14px;
 	position: absolute;
 	width: 50px;
 	height: 100%;
@@ -96,8 +121,15 @@ const CUSTOM_STYLE = `
 	height: 200px;
 }
 
+/* @todo clean this css paths, is not needed for unique ids and classes */
+#youorg_groups_popup .group_entry button img
+{
+	width: 100%;
+	height: 100%;
+}
 #youorg_groups_popup .group_entry button
 {
+	padding: 6px;
 	position: absolute;
 	background-color: var(--red-button-color);
 	height: 100%;
@@ -126,6 +158,7 @@ const CUSTOM_STYLE = `
 #youorg_groups_popup #chosen
 {
 	background-color: #999999;
+	color: white;
 }
 #youorg_groups_popup .group_entry:hover
 {
@@ -149,12 +182,17 @@ body_node.appendChild(style);
 function create_and_append_button(parent_node, channel_id)
 {
 	let add_button = document.createElement("button");
+	add_button.setAttribute("id", "add_button");
+	let add_button_img = document.createElement("img");
+	add_button.appendChild(add_button_img);
+
 	add_button.addEventListener("click", evt =>
 	{
 		evt.preventDefault();
 		evt.stopPropagation();
 		let groups = groups_popup_tmp.cloneNode(true);
 		let cancel = groups.querySelector("#cancel");
+		groups.querySelector("#cancel img").src = browser.runtime.getURL("data/close.svg");
 
 		function delete_groups_popup()
 		{
@@ -207,6 +245,7 @@ function create_and_append_button(parent_node, channel_id)
 					{
 						if (channel_data[name].indexOf(channel_id) >= 0)
 						{
+							group_entry.querySelector("button img").src = browser.runtime.getURL("data/close.svg");
 							group_entry.querySelector("button").style.display = "block";
 							group_entry.querySelector("button").addEventListener("click", evt =>
 							{
@@ -289,7 +328,7 @@ function create_and_append_button(parent_node, channel_id)
 				}
 				if (added_to_groups.length > 0)
 				{
-					add_button.innerText = "O";
+					add_button_img.src = browser.runtime.getURL("data/gear.svg");
 					let group_text = "Added to Groups:\n";
 					for (let gp of added_to_groups)
 					{
@@ -299,7 +338,7 @@ function create_and_append_button(parent_node, channel_id)
 				}
 				else
 				{
-					add_button.innerText = "+";
+					add_button_img.src = browser.runtime.getURL("data/group_add.svg");
 				}
 			});
 		});

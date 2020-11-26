@@ -174,7 +174,6 @@ browser.storage.local.get({group_list: []}).then(data =>
 				{
 					let config_entry = config_entry_temp.querySelector("div").cloneNode(true);
 					config_entry.querySelector("div").innerText = channel_title_from_id(channel_id);
-					config_entry.querySelector("button").innerText = "X";
 					config_entry.querySelector("button").addEventListener("click", evt =>
 					{
 						// @todo better remove algorithm
