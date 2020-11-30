@@ -273,6 +273,10 @@ browser.storage.local.get({group_list: []}).then(data =>
 // author notice
 // @todo put a link in the author notice
 let author_msg = document.createElement("div");
-author_msg.innerText = "2020, YouOrg by Douglas Vinicius.";
+//author_msg.innerText = "2020, YouOrg by Douglas Vinicius.";
+author_msg.innerHTML = `
+2020, <a href="https://github.com/douglasvinis/youorg" target="_blank">YouOrg</a>
+ by <a href="https://github.com/douglasvinis" target="_blank">Douglas Vinicius</a>.
+`;
 author_msg.setAttribute("id", "author_msg");
 document.getElementsByTagName("body")[0].appendChild(author_msg);

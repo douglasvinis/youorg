@@ -71,14 +71,19 @@ const CUSTOM_STYLE = `
 	height: 100%;
 	margin: 0;
 }
-#youorg_groups_popup #groups
+
+#groups button
+{
+	border: solid var(--dark-bg-color);
+}
+
+#groups
 {
 	background-color: var(--main-bg-color);
 	padding: 5px;
-	width: 22%;
-	height: 45%;
-	margin-left: 40%;
-	margin-top: 10%;
+	width: 250px;
+	height: 320px;
+	margin: auto auto;
 }
 
 #youorg_groups_popup #title
@@ -89,7 +94,6 @@ const CUSTOM_STYLE = `
 }
 #youorg_groups_popup #title div
 {
-	text-align: center;
 	font-size: 20px;
 }
 
@@ -121,13 +125,12 @@ const CUSTOM_STYLE = `
 	height: 200px;
 }
 
-/* @todo clean this css paths, is not needed for unique ids and classes */
-#youorg_groups_popup .group_entry button img
+.group_entry button img
 {
 	width: 100%;
 	height: 100%;
 }
-#youorg_groups_popup .group_entry button
+.group_entry button
 {
 	padding: 6px;
 	position: absolute;
@@ -137,12 +140,12 @@ const CUSTOM_STYLE = `
 	top: 0px;
 	right: 0px;
 }
-#youorg_groups_popup .group_entry button:hover
+.group_entry button:hover
 {
 	background-color: var(--red-button-color-hi);
 }
 
-#youorg_groups_popup .group_entry
+.group_entry
 {
 	position: relative;
 	height: 25px;
@@ -160,7 +163,7 @@ const CUSTOM_STYLE = `
 	background-color: #999999;
 	color: white;
 }
-#youorg_groups_popup .group_entry:hover
+.group_entry:hover
 {
 	background-color: #000;
 	color: #fff;
@@ -170,7 +173,22 @@ const CUSTOM_STYLE = `
 {
 	margin-top: 10px;
 	display: flex;
+	flex-direction: row;
 }
+#youorg_groups_popup #new_group input
+{
+	width: 65%;
+}
+
+#youorg_groups_popup #new_group button
+{
+	background-color: var(--button-color);
+}
+#youorg_groups_popup #new_group button:hover
+{
+	background-color: var(--button-color-hi);
+}
+
 </style>
 `;
 
