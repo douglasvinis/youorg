@@ -225,7 +225,7 @@ function create_and_append_button(parent_node, channel_id)
 			let list = groups.querySelector("#list");
 			while (list.firstChild) {list.removeChild(list.lastChild);}
 
-			browser.storage.local.get({group_list: []}).then(data =>
+			browser.storage.sync.get({group_list: []}).then(data =>
 			{
 				let group_name_list = data.group_list;
 				for (let name of group_name_list)
@@ -236,14 +236,14 @@ function create_and_append_button(parent_node, channel_id)
 					{
 						let store_data = {};
 						store_data[name] = [];
-						browser.storage.local.get(store_data).then(data =>
+						browser.storage.sync.get(store_data).then(data =>
 						{
 							let channel_id_list = data[name];
 							if (channel_id_list.indexOf(channel_id) < 0)
 							{
 								channel_id_list.push(channel_id);
 								store_data[name] = channel_id_list;
-								browser.storage.local.set(store_data).then(() =>
+								browser.storage.sync.set(store_data).then(() =>
 								{
 									delete_groups_popup();
 									add_button_info_update();
@@ -259,7 +259,7 @@ function create_and_append_button(parent_node, channel_id)
 					group_entry.querySelector("div").innerText = name;
 					let tmp_group_data = {};
 					tmp_group_data[name] = [];
-					browser.storage.local.get(tmp_group_data).then(channel_data =>
+					browser.storage.sync.get(tmp_group_data).then(channel_data =>
 					{
 						if (channel_data[name].indexOf(channel_id) >= 0)
 						{
@@ -278,7 +278,7 @@ function create_and_append_button(parent_node, channel_id)
 										remove_set_group_data[name].push(remove_channel);
 									}
 								}
-								browser.storage.local.set(remove_set_group_data).then(() =>
+								browser.storage.sync.set(remove_set_group_data).then(() =>
 								{
 									list_groups();
 									add_button_info_update();
@@ -293,7 +293,7 @@ function create_and_append_button(parent_node, channel_id)
 		}
 		function add_new_group()
 		{
-			browser.storage.local.get({group_list: []}).then(data =>
+			browser.storage.sync.get({group_list: []}).then(data =>
 			{
 				let group_name_list = data.group_list;
 				let group_name = add_group_input.value;
@@ -301,9 +301,9 @@ function create_and_append_button(parent_node, channel_id)
 				{
 					if (group_name_list.indexOf(group_name) == -1)
 					{
-						// @cleanup if storage.local.set fail i have a bug inside group_name_list
+						// @cleanup if storage.sync.set fail i have a bug inside group_name_list
 						group_name_list.push(group_name);
-						browser.storage.local.set({group_list: group_name_list}).then(() =>
+						browser.storage.sync.set({group_list: group_name_list}).then(() =>
 						{
 							list_groups();
 						});
@@ -324,7 +324,7 @@ function create_and_append_button(parent_node, channel_id)
 	
 	function add_button_info_update()
 	{
-		browser.storage.local.get({group_list: []}).then(data =>
+		browser.storage.sync.get({group_list: []}).then(data =>
 		{
 			let group_name_list = data.group_list;
 			let groups_init_obj = {};
@@ -333,7 +333,7 @@ function create_and_append_button(parent_node, channel_id)
 				groups_init_obj[name] = [];
 			}
 			// @speed I can get all members of group_name_list from storage at the same time
-			browser.storage.local.get(groups_init_obj).then(channel_data =>
+			browser.storage.sync.get(groups_init_obj).then(channel_data =>
 			{
 				console.log("UPDATING_ADD_TO_GROUP_BUTTON");
 				let added_to_groups = [];

@@ -2,7 +2,7 @@
 	"manifest_version": 2,
 	"author": "Douglas Vinicius",
 	"name": "YouOrg",
-	"description": "TODO",
+	"description": "A simple and lightweight Youtube channel grouping tool.",
 	"version": "0.1",
 
 	"browser_specific_settings":
@@ -26,9 +26,14 @@
 		"data/close.svg"
 	],
 
+	"icons":
+	{
+		"48": "data/youorg_logo.svg",
+		"96": "data/youorg_logo.svg"
+	},
 	"browser_action":
 	{
-		"default_title": "Open YouOrg tab"
+		"default_title": "Open a YouOrg tab"
 	},
 	"background":
 	{

@@ -89,7 +89,7 @@ let group_config_temp = document.getElementById("group_config_temp").content;
 let config_entry_temp = document.getElementById("config_entry_temp").content;
 let chosen_group_entry = null;
 
-browser.storage.local.get({group_list: []}).then(data =>
+browser.storage.sync.get({group_list: []}).then(data =>
 {
 	function open_group(name, group_node)
 	{
@@ -101,7 +101,7 @@ browser.storage.local.get({group_list: []}).then(data =>
 
 		let group_data_tmp = {};
 		group_data_tmp[name] = [];
-		browser.storage.local.get(group_data_tmp).then(group_data =>
+		browser.storage.sync.get(group_data_tmp).then(group_data =>
 		{
 			show_channel_group(group_data[name]);
 		});
@@ -122,7 +122,7 @@ browser.storage.local.get({group_list: []}).then(data =>
 		{
 			if (confirm("Delete the group and all channels added ?"))
 			{
-				browser.storage.local.get({group_list: []}).then(group_list_data =>
+				browser.storage.sync.get({group_list: []}).then(group_list_data =>
 				{
 					let groups_list = group_list_data["group_list"];
 					// @todo better way to remove a item in the middle of a list
@@ -134,9 +134,9 @@ browser.storage.local.get({group_list: []}).then(data =>
 							new_groups_list.push(group_item);
 						}
 					}
-					browser.storage.local.set({group_list: new_groups_list}).then(() =>
+					browser.storage.sync.set({group_list: new_groups_list}).then(() =>
 					{
-						browser.storage.local.remove(name);
+						browser.storage.sync.remove(name);
 						browser.tabs.reload();
 					});
 				});
@@ -162,7 +162,7 @@ browser.storage.local.get({group_list: []}).then(data =>
 		let group_data_init = {};
 		group_data_init[name] = [];
 		let config_channel_list = [];
-		browser.storage.local.get(group_data_init).then(group_data =>
+		browser.storage.sync.get(group_data_init).then(group_data =>
 		{
 			config_channel_list = group_data[name];
 			function channel_box_update()
@@ -203,25 +203,25 @@ browser.storage.local.get({group_list: []}).then(data =>
 		{
 			let config_group_data_tmp = {};
 			config_group_data_tmp[name] = config_channel_list;
-			browser.storage.local.set(config_group_data_tmp).then(() =>
+			browser.storage.sync.set(config_group_data_tmp).then(() =>
 			{
 				let new_group_name = title_input.value;
 				if ((new_group_name != name) && (new_group_name != ""))
 				{
 					let group_data_tmp = {};
 					group_data_tmp[name] = [];
-					browser.storage.local.get(group_data_tmp).then(group_data =>
+					browser.storage.sync.get(group_data_tmp).then(group_data =>
 					{
 						group_data_tmp = {};
 						group_data_tmp[new_group_name] = group_data[name];
-						browser.storage.local.set(group_data_tmp).then(() =>
+						browser.storage.sync.set(group_data_tmp).then(() =>
 						{
-							browser.storage.local.remove(name);
-							browser.storage.local.get({group_list: []}).then(group_list_data =>
+							browser.storage.sync.remove(name);
+							browser.storage.sync.get({group_list: []}).then(group_list_data =>
 							{
 								let groups_list = group_list_data["group_list"];
 								groups_list[groups_list.indexOf(name)] = new_group_name;
-								browser.storage.local.set({group_list: groups_list}).then(() =>
+								browser.storage.sync.set({group_list: groups_list}).then(() =>
 								{
 									browser.tabs.reload();
 								});
@@ -249,7 +249,7 @@ browser.storage.local.get({group_list: []}).then(data =>
 		}
 		let group_data_tmp = {};
 		group_data_tmp[name] = [];
-		browser.storage.local.get(group_data_tmp).then(group_data =>
+		browser.storage.sync.get(group_data_tmp).then(group_data =>
 		{
 			let channel_count = 0;
 			channel_count = group_data[name].length;
@@ -270,6 +270,10 @@ browser.storage.local.get({group_list: []}).then(data =>
 	}
 });
 
+browser.storage.sync.getBytesInUse().then(data =>
+	{
+		console.log(data);
+	});
 // author notice
 // @todo put a link in the author notice
 let author_msg = document.createElement("div");
